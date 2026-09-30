@@ -4,6 +4,16 @@
 
 GrowthMCP Dashboard is a high-density, client-side analytics web console built to demonstrate and interact with [GrowthMCP](https://github.com/Lokeshwar2005/ai-growth-analytics-mcp) — the self-hosted Model Context Protocol (MCP) server for growth marketing intelligence and Meta Ads investigation.
 
+## 📖 About GrowthMCP Dashboard
+
+GrowthMCP Dashboard is an enterprise-grade, high-density growth marketing analytics web console built with **React 19**, **TypeScript**, **Tailwind CSS**, and **Vite**. It provides growth marketing teams, performance marketers, and executive operators with a unified view of unit economics (ROAS, CPA, CPL, CTR, CPC, CVR), conversion funnels, creative asset fatigue, cohort retention decay, and deterministic root-cause investigation.
+
+It features a dual-mode architecture:
+- **Demo Mode (Default)**: Verified, deterministic multi-channel dataset running client-side with zero external setup.
+- **Live Mode**: End-to-end connection over Streamable HTTP (`/mcp`) to a self-hosted [GrowthMCP](https://github.com/Lokeshwar2005/ai-growth-analytics-mcp) server and live Meta Ads.
+
+👉 **[Open Live GrowthMCP Analytics Dashboard](https://lokeshwar2005.github.io/growthmcp-dashboard/)**
+
 ---
 
 ## 🚀 Live Demo
