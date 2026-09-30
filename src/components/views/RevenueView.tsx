@@ -16,7 +16,7 @@ export const RevenueView: React.FC = () => {
   const totalRevenue = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.revenue, 0);
   const totalSpend = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.spend, 0);
   const totalConversions = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.conversions, 0);
-  const aggregateRoas = totalRevenue / totalSpend;
+  const aggregateRoas = totalSpend > 0 ? totalRevenue / totalSpend : 0;
 
   const campaignRevenueData = DEMO_CAMPAIGNS.map((c) => ({
     name: c.name.length > 25 ? `${c.name.substring(0, 22)}...` : c.name,
@@ -61,7 +61,7 @@ export const RevenueView: React.FC = () => {
           <div className="text-center">
             <span className="text-xs text-slate-500">Orders / Purchases</span>
             <div className="text-2xl font-bold text-slate-900 font-mono mt-0.5">{totalConversions}</div>
-            <span className="text-[11px] text-slate-400">Avg AOV: {formatCurrency(totalRevenue / totalConversions)}</span>
+            <span className="text-[11px] text-slate-400">Avg AOV: {totalConversions > 0 ? formatCurrency(totalRevenue / totalConversions) : '$0.00'}</span>
           </div>
 
           <ArrowRight className="w-5 h-5 text-slate-400 hidden sm:block" />

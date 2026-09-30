@@ -138,7 +138,7 @@ export function analyzeGrowthQuery(
 
   const metrics = calculateMetrics(filtered);
 
-  // Generate explanation
+  // Generate explanation phrases
   const metricPhrases = requestedMetrics
     .map(m => `${METRIC_LABELS[m]} is ${formatMetricValue(m, metrics[m])}`)
     .join(', and ');
@@ -149,7 +149,35 @@ export function analyzeGrowthQuery(
     ? `for ${filters.platform} Ads`
     : `across all ${filtered.length} matching marketing records`;
 
-  const explanation = `Based on deterministic aggregate totals ${scope}: ${metricPhrases}. (Spend: ${formatCurrency(metrics.spend)}, Revenue: ${formatCurrency(metrics.revenue)}, Conversions: ${formatNumber(metrics.conversions)}).`;
+  // Check for campaign ranking / superlative intent
+  const loweredQuery = query.toLowerCase();
+  const isSuperlative = /highest|top|best|lowest|worst|which campaign/.test(loweredQuery);
+  let rankingNote = '';
+
+  if (isSuperlative && filtered.length > 0) {
+    const primaryMetric = requestedMetrics[0];
+    const isLowest = /lowest|worst/.test(loweredQuery);
+
+    const campaignGroups: Record<string, CanonicalRecord[]> = {};
+    for (const r of filtered) {
+      const cName = r.campaign_name || 'Unknown';
+      if (!campaignGroups[cName]) campaignGroups[cName] = [];
+      campaignGroups[cName].push(r);
+    }
+
+    const campaignRankings = Object.entries(campaignGroups).map(([name, rows]) => {
+      const cMetrics = calculateMetrics(rows);
+      return { name, value: cMetrics[primaryMetric] };
+    }).sort((a, b) => (isLowest ? a.value - b.value : b.value - a.value));
+
+    if (campaignRankings.length > 0) {
+      const top = campaignRankings[0];
+      const descriptor = isLowest ? 'Lowest' : 'Highest';
+      rankingNote = ` ${descriptor} ${METRIC_LABELS[primaryMetric]} campaign is "${top.name}" at ${formatMetricValue(primaryMetric, top.value)}.`;
+    }
+  }
+
+  const explanation = `Based on deterministic aggregate totals ${scope}: ${metricPhrases}.${rankingNote} (Spend: ${formatCurrency(metrics.spend)}, Revenue: ${formatCurrency(metrics.revenue)}, Conversions: ${formatNumber(metrics.conversions)}).`;
 
   return {
     query,

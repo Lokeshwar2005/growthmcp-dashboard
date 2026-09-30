@@ -125,8 +125,8 @@ export const CampaignDetailModal: React.FC<CampaignDetailModalProps> = ({
           {/* Audit & Diagnostic Evidence */}
           <div className="p-4 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-600 space-y-1.5">
             <span className="font-semibold text-slate-800 uppercase tracking-wider text-[10px]">Evidence Metadata:</span>
-            <p>• Data Source: Meta Graph API (v21.0) via GrowthMCP `get_campaigns` & `get_insights` tools.</p>
-            <p>• Action Array Canonicalization: Purchases and leads mapped from `offsite_conversion.fb_pixel_purchase` without double-counting rollups.</p>
+            <p>• Data Source: {campaign.platform} Ads via GrowthMCP canonical records.</p>
+            <p>• Action Array Canonicalization: Conversion and lead actions mapped to canonical schemas without double-counting rollups.</p>
           </div>
         </div>
 

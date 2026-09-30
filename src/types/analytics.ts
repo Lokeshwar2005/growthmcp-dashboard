@@ -62,7 +62,7 @@ export interface DimensionMovement {
 
 export interface InvestigationResult {
   question: string;
-  target_metric: string;
+  target_metric: keyof GrowthMetrics;
   summary: string;
   current_metrics: GrowthMetrics;
   previous_metrics: GrowthMetrics;

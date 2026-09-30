@@ -2,20 +2,22 @@ import React from 'react';
 import { ArrowDown, TrendingUp } from 'lucide-react';
 import { KPICard } from '../common/KPICard';
 import { DEMO_CAMPAIGNS } from '../../data/demoData';
-import { formatCurrency, formatPercent, formatNumber } from '../../services/metricsEngine';
+import { calculateMetrics, formatCurrency, formatPercent, formatNumber } from '../../services/metricsEngine';
 
 export const AcquisitionView: React.FC = () => {
-  const totalSpend = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.spend, 0);
-  const totalImpressions = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.impressions, 0);
-  const totalClicks = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.clicks, 0);
-  const totalLeads = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.leads, 0);
-  const totalConversions = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.conversions, 0);
-
-  const aggregateCtr = (totalClicks / totalImpressions) * 100;
-  const aggregateCpc = totalSpend / totalClicks;
-  const aggregateCpl = totalSpend / totalLeads;
-  const aggregateCpa = totalSpend / totalConversions;
-  const aggregateCvr = (totalConversions / totalClicks) * 100;
+  const metrics = calculateMetrics(DEMO_CAMPAIGNS);
+  const {
+    spend: totalSpend,
+    impressions: totalImpressions,
+    clicks: totalClicks,
+    leads: totalLeads,
+    conversions: totalConversions,
+    ctr: aggregateCtr,
+    cpc: aggregateCpc,
+    cpl: aggregateCpl,
+    cpa: aggregateCpa,
+    conversion_rate: aggregateCvr,
+  } = metrics;
 
   // Funnel steps
   const funnelSteps = [
@@ -36,7 +38,7 @@ export const AcquisitionView: React.FC = () => {
     {
       stage: 'Intent — Qualified Leads',
       count: totalLeads,
-      rate: `${((totalLeads / totalClicks) * 100).toFixed(1)}% of Clicks`,
+      rate: `${totalClicks > 0 ? ((totalLeads / totalClicks) * 100).toFixed(1) : '0.0'}% of Clicks`,
       subtext: `Avg CPL: ${formatCurrency(aggregateCpl)}`,
       color: 'bg-indigo-400',
     },

@@ -3,6 +3,7 @@ import { SearchCheck, ArrowDownRight, ArrowUpRight, ShieldAlert } from 'lucide-r
 import { investigateGrowthIssue } from '../../services/investigationEngine';
 import { DEMO_INVESTIGATION_CURRENT_PERIOD, DEMO_INVESTIGATION_PREVIOUS_PERIOD } from '../../data/demoData';
 import { formatCurrency, formatMultiplier } from '../../services/metricsEngine';
+import { formatMetricValue } from '../../services/analystEngine';
 
 interface InvestigationsViewProps {
   initialQuestion?: string;
@@ -205,8 +206,8 @@ export const InvestigationsView: React.FC<InvestigationsViewProps> = ({ initialQ
                   <th className="px-4 py-2.5">Campaign Name</th>
                   <th className="px-3 py-2.5 text-right">Current Spend</th>
                   <th className="px-3 py-2.5 text-right">Current Revenue</th>
-                  <th className="px-3 py-2.5 text-right">Current ROAS</th>
-                  <th className="px-3 py-2.5 text-right">Previous ROAS</th>
+                  <th className="px-3 py-2.5 text-right">Current {result.target_metric.toUpperCase()}</th>
+                  <th className="px-3 py-2.5 text-right">Previous {result.target_metric.toUpperCase()}</th>
                   <th className="px-3 py-2.5 text-right">Metric Movement</th>
                 </tr>
               </thead>
@@ -217,10 +218,10 @@ export const InvestigationsView: React.FC<InvestigationsViewProps> = ({ initialQ
                     <td className="px-3 py-2.5 text-right">{formatCurrency(row.current_metrics.spend)}</td>
                     <td className="px-3 py-2.5 text-right">{formatCurrency(row.current_metrics.revenue)}</td>
                     <td className="px-3 py-2.5 text-right font-bold text-indigo-700">
-                      {formatMultiplier(row.current_metrics.roas)}
+                      {formatMetricValue(result.target_metric, row.current_metrics[result.target_metric])}
                     </td>
                     <td className="px-3 py-2.5 text-right text-slate-500">
-                      {formatMultiplier(row.previous_metrics.roas)}
+                      {formatMetricValue(result.target_metric, row.previous_metrics[result.target_metric])}
                     </td>
                     <td className="px-3 py-2.5 text-right font-bold">
                       <span

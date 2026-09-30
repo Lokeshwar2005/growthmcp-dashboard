@@ -154,12 +154,19 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({ onInvestigateCampa
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-800">
-              {filteredCampaigns.map((camp) => (
-                <tr
-                  key={camp.id}
-                  onClick={() => setActiveCampaign(camp)}
-                  className="hover:bg-indigo-50/40 cursor-pointer transition"
-                >
+              {filteredCampaigns.length === 0 ? (
+                <tr>
+                  <td colSpan={11} className="px-4 py-8 text-center text-slate-500 text-xs">
+                    No campaigns found matching &quot;{searchTerm}&quot;{selectedPlatform !== 'All' ? ` on ${selectedPlatform}` : ''}.
+                  </td>
+                </tr>
+              ) : (
+                filteredCampaigns.map((camp) => (
+                  <tr
+                    key={camp.id}
+                    onClick={() => setActiveCampaign(camp)}
+                    className="hover:bg-indigo-50/40 cursor-pointer transition"
+                  >
                   <td className="px-4 py-3 font-medium text-slate-900">
                     <div className="font-semibold text-xs leading-snug">{camp.name}</div>
                     <div className="text-[10px] text-slate-400 font-mono mt-0.5">{camp.id} • {camp.objective}</div>
@@ -193,7 +200,7 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({ onInvestigateCampa
                     </span>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

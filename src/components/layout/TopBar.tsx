@@ -41,7 +41,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* Data Source Badge */}
         <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs border border-slate-200">
           <Database className="w-3 h-3 text-slate-500" />
-          <span className="font-medium">Meta Insights</span>
+          <span className="font-medium">Multi-Channel Feed</span>
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
         </div>
 

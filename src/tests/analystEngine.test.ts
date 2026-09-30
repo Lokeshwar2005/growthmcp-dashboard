@@ -30,4 +30,14 @@ describe('AI Growth Analyst Query Engine', () => {
     expect(res.filter_applied.campaign).toBe('Prospecting Advantage+');
     expect(res.metrics.spend).toBe(7000);
   });
+
+  it('identifies the highest-performing campaign when asked', () => {
+    const res = analyzeGrowthQuery(
+      'Which campaign has the highest ROAS?',
+      DEMO_INVESTIGATION_CURRENT_PERIOD
+    );
+
+    expect(res.requested_metrics).toContain('roas');
+    expect(res.explanation).toContain('Highest ROAS campaign is "Brand Search" at 3.00x');
+  });
 });
