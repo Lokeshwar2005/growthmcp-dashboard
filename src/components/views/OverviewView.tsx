@@ -127,7 +127,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
           changePct={+12.4}
           comparisonLabel="vs prior 7 days ($21.5k)"
           subtitle="Budget pacing: 98%"
-          definition="Total advertising spend deployed across Meta Ads, Google Ads, and TikTok Ads."
+          definition="Advertising spend: Sum of spend across active campaigns."
         />
         <KPICard
           title="Gross Ad Revenue"
@@ -135,7 +135,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
           changePct={-8.2}
           comparisonLabel="vs prior 7 days ($43.7k)"
           subtitle="Blended 2.07x"
-          definition="Attributed gross revenue calculated from conversion action values (purchases and catalog orders)."
+          definition="Attributed revenue: Sum of attributed revenue across campaigns."
         />
         <KPICard
           title="Blended ROAS"
@@ -143,7 +143,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
           changePct={-18.3}
           comparisonLabel="vs prior 7 days (2.03x)"
           subtitle="Target: 2.20x"
-          definition="Return on Ad Spend: Attributed gross revenue ÷ total ad spend."
+          definition="Return on ad spend: Attributed revenue ÷ ad spend."
         />
         <KPICard
           title="Qualified Leads"
@@ -151,7 +151,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
           changePct={+6.8}
           comparisonLabel="vs prior 7 days (2,715)"
           subtitle="Account-level records"
-          definition="CRM & ad account lifecycle-normalized leads across all active and evergreen campaigns (3,288 total). Funnel below tracks first-touch attributed paid leads (2,900)."
+          definition="Leads: Sum of qualified leads acquired across campaigns."
         />
         <KPICard
           title="Conversions"
@@ -159,7 +159,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
           changePct={-4.5}
           comparisonLabel="vs prior 7 days (1,050)"
           subtitle="All campaign goals"
-          definition="Total macro-conversions across all campaign objectives (1,093 total). Funnel below tracks verified e-commerce purchase checkouts (1,003)."
+          definition="Conversions: Sum of conversion events across campaigns."
         />
         <KPICard
           title="Blended CPL"
@@ -168,7 +168,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
           comparisonLabel="vs prior 7 days ($7.94)"
           inverted
           subtitle="Cost per lead"
-          definition="Cost Per Lead: Total ad spend ÷ qualified leads."
+          definition="Cost per lead: Total ad spend ÷ leads."
         />
         <KPICard
           title="Click-Through Rate (CTR)"
@@ -176,15 +176,15 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
           changePct={-3.1}
           comparisonLabel="vs prior 7 days (1.99%)"
           subtitle="Aggregate link CTR"
-          definition="Click-Through Rate: Ad clicks ÷ ad impressions × 100."
+          definition="Click-through rate: Clicks ÷ impressions × 100."
         />
         <KPICard
           title="Conversion Rate (CVR)"
           value={formatPercent(aggregateCvr)}
           changePct={-7.6}
           comparisonLabel="vs prior 7 days (5.10%)"
-          subtitle="Purchases / click"
-          definition="Conversion Rate: Total conversions ÷ ad clicks × 100."
+          subtitle="Conversions / click"
+          definition="Conversion rate: Total conversions ÷ clicks × 100."
         />
       </div>
 
@@ -310,7 +310,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Multi-touch paid advertising progression from impression to store purchase
+                  Paid advertising stage progression from impression to store purchase
                 </p>
               </div>
               <span className="text-xs font-mono text-slate-500">Blended Stage Rates</span>
@@ -345,11 +345,11 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             <div className="flex items-start space-x-1.5 text-slate-600">
               <Info className="w-4 h-4 text-indigo-600 flex-shrink-0 mt-0.5" />
               <span>
-                <strong className="text-slate-800">Methodology Distinction:</strong> Funnel tracks multi-touch paid acquisition events (2,900 Leads → 1,003 Purchases). Top KPI cards report lifecycle-normalized account totals (3,288 Qualified Leads → 1,093 Total Conversions across all campaigns).
+                <strong className="text-slate-800">Methodology Distinction:</strong> The funnel models attributed paid acquisition events (2,900 leads → 1,003 purchases), while the KPI cards use normalized account-level totals across the selected reporting dataset (3,288 qualified leads / 1,093 conversions).
               </span>
             </div>
             <div className="text-[11px] font-mono text-slate-400 whitespace-nowrap pl-5 sm:pl-0">
-              Attribution: 7d Click / 1d View
+              Reporting Scope: Paid Campaigns
             </div>
           </div>
         </div>
