@@ -13,7 +13,9 @@ import { AIAnalystView } from './components/views/AIAnalystView';
 import { DataSourcesView } from './components/views/DataSourcesView';
 import { SystemView } from './components/views/SystemView';
 
-export const App: React.FC = () => {
+import { AnalyticsContextProvider } from './services/analyticsContext';
+
+export const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavigationTab>('overview');
   const [dateRange, setDateRange] = useState('Last 14 Days (Sep 07 – Sep 20)');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -91,6 +93,14 @@ export const App: React.FC = () => {
         </main>
       </div>
     </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <AnalyticsContextProvider>
+      <AppContent />
+    </AnalyticsContextProvider>
   );
 };
 

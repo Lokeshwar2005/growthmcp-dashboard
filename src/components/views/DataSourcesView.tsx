@@ -1,15 +1,29 @@
 import React from 'react';
 import { Database, CheckCircle2, AlertCircle, UploadCloud } from 'lucide-react';
 
+import { useAnalytics } from '../../services/analyticsContext';
+
 export const DataSourcesView: React.FC = () => {
+  const { mode, connectionStatus, selectedAccountId } = useAnalytics();
+
+  const isMetaLive = mode === 'live' && connectionStatus === 'connected';
+
   const sources = [
     {
       name: 'Meta Ads (Facebook & Instagram)',
       type: 'Ad Platform',
-      status: 'Demo Dataset',
-      statusType: 'demo',
-      details: 'Deterministic synthetic records simulating Graph API insights, campaigns, and creative metrics.',
-      syncTime: 'Just now',
+      status: isMetaLive
+        ? `Live Active (${selectedAccountId})`
+        : mode === 'live'
+        ? 'Disconnected'
+        : 'Demo Dataset',
+      statusType: isMetaLive ? 'ready' : mode === 'live' ? 'disconnected' : 'demo',
+      details: isMetaLive
+        ? `Connected to live Meta Graph API via GrowthMCP Streamable HTTP on account ${selectedAccountId}.`
+        : mode === 'live'
+        ? 'GrowthMCP Streamable HTTP endpoint unreachable. Check server status in System view.'
+        : 'Deterministic synthetic records simulating Graph API insights, campaigns, and creative metrics.',
+      syncTime: isMetaLive ? 'Live Stream' : mode === 'live' ? 'Failed' : 'Just now',
     },
     {
       name: 'Google Ads',

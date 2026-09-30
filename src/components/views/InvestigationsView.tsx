@@ -5,12 +5,16 @@ import { DEMO_INVESTIGATION_CURRENT_PERIOD, DEMO_INVESTIGATION_PREVIOUS_PERIOD }
 import { formatCurrency, formatMultiplier } from '../../services/metricsEngine';
 import { formatMetricValue } from '../../services/analystEngine';
 
+import { useAnalytics } from '../../services/analyticsContext';
+
 interface InvestigationsViewProps {
   initialQuestion?: string;
 }
 
 export const InvestigationsView: React.FC<InvestigationsViewProps> = ({ initialQuestion }) => {
+  const { provider, selectedAccountId } = useAnalytics();
   const [question, setQuestion] = useState(initialQuestion || 'Why did ROAS drop?');
+  const [isRunning, setIsRunning] = useState(false);
   const [result, setResult] = useState(() =>
     investigateGrowthIssue(
       initialQuestion || 'Why did ROAS drop?',
@@ -41,14 +45,23 @@ export const InvestigationsView: React.FC<InvestigationsViewProps> = ({ initialQ
     'Why did CPA increase?',
   ];
 
-  const handleRun = (q: string) => {
+  const handleRun = async (q: string) => {
     setQuestion(q);
-    const res = investigateGrowthIssue(
-      q,
-      DEMO_INVESTIGATION_CURRENT_PERIOD,
-      DEMO_INVESTIGATION_PREVIOUS_PERIOD
-    );
-    setResult(res);
+    setIsRunning(true);
+    try {
+      const res = await provider.runInvestigation(q, selectedAccountId);
+      setResult(res);
+    } catch (err) {
+      console.warn('Investigation live call error, using local fallback:', err);
+      const res = investigateGrowthIssue(
+        q,
+        DEMO_INVESTIGATION_CURRENT_PERIOD,
+        DEMO_INVESTIGATION_PREVIOUS_PERIOD
+      );
+      setResult(res);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   return (
@@ -78,9 +91,10 @@ export const InvestigationsView: React.FC<InvestigationsViewProps> = ({ initialQ
           />
           <button
             onClick={() => handleRun(question)}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md text-xs font-semibold shadow-xs transition"
+            disabled={isRunning}
+            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md text-xs font-semibold shadow-xs transition disabled:opacity-50 flex items-center justify-center"
           >
-            Run Diagnostic
+            <span>{isRunning ? 'Running...' : 'Run Diagnostic'}</span>
           </button>
         </div>
 

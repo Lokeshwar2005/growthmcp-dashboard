@@ -1,15 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Filter, ArrowUpDown } from 'lucide-react';
 import type { CampaignItem } from '../../types/analytics';
-import { DEMO_CAMPAIGNS } from '../../data/demoData';
 import { formatCurrency, formatPercent, formatMultiplier, formatNumber } from '../../services/metricsEngine';
 import { CampaignDetailModal } from './CampaignDetailModal';
+
+import { useAnalytics } from '../../services/analyticsContext';
 
 interface CampaignsViewProps {
   onInvestigateCampaign: (campaignName: string) => void;
 }
 
 export const CampaignsView: React.FC<CampaignsViewProps> = ({ onInvestigateCampaign }) => {
+  const { campaigns, mode, selectedAccountId, setMode } = useAnalytics();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPlatform, setSelectedPlatform] = useState<string>('All');
   const [sortField, setSortField] = useState<keyof CampaignItem>('spend');
@@ -17,7 +19,7 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({ onInvestigateCampa
   const [activeCampaign, setActiveCampaign] = useState<CampaignItem | null>(null);
 
   const filteredCampaigns = useMemo(() => {
-    return DEMO_CAMPAIGNS.filter((c) => {
+    return campaigns.filter((c) => {
       const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPlatform = selectedPlatform === 'All' || c.platform === selectedPlatform;
       return matchesSearch && matchesPlatform;
@@ -31,7 +33,7 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({ onInvestigateCampa
         ? String(valA).localeCompare(String(valB))
         : String(valB).localeCompare(String(valA));
     });
-  }, [searchTerm, selectedPlatform, sortField, sortAsc]);
+  }, [campaigns, searchTerm, selectedPlatform, sortField, sortAsc]);
 
   const handleSort = (field: keyof CampaignItem) => {
     if (sortField === field) {
@@ -157,7 +159,20 @@ export const CampaignsView: React.FC<CampaignsViewProps> = ({ onInvestigateCampa
               {filteredCampaigns.length === 0 ? (
                 <tr>
                   <td colSpan={11} className="px-4 py-8 text-center text-slate-500 text-xs">
-                    No campaigns found matching &quot;{searchTerm}&quot;{selectedPlatform !== 'All' ? ` on ${selectedPlatform}` : ''}.
+                    {mode === 'live' && campaigns.length === 0 ? (
+                      <div className="py-4 space-y-2">
+                        <p className="font-semibold text-slate-700">No active campaigns in Meta ad account {selectedAccountId}</p>
+                        <p className="text-slate-400">GrowthMCP found zero campaigns for this account. You can select another account in the header or switch to Demo Mode.</p>
+                        <button
+                          onClick={() => setMode('demo')}
+                          className="mt-2 px-3 py-1 bg-white border border-slate-300 rounded text-indigo-600 font-semibold hover:bg-slate-50 transition cursor-pointer"
+                        >
+                          Switch to Demo Mode
+                        </button>
+                      </div>
+                    ) : (
+                      `No campaigns found matching "${searchTerm}"${selectedPlatform !== 'All' ? ` on ${selectedPlatform}` : ''}.`
+                    )}
                   </td>
                 </tr>
               ) : (

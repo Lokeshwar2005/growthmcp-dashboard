@@ -4,8 +4,12 @@ import { analyzeGrowthQuery } from '../../services/analystEngine';
 import { DEMO_INVESTIGATION_CURRENT_PERIOD } from '../../data/demoData';
 import { formatCurrency, formatPercent, formatMultiplier, formatNumber } from '../../services/metricsEngine';
 
+import { useAnalytics } from '../../services/analyticsContext';
+
 export const AIAnalystView: React.FC = () => {
+  const { provider, selectedAccountId } = useAnalytics();
   const [query, setQuery] = useState('What is the ROAS?');
+  const [isRunning, setIsRunning] = useState(false);
   const [result, setResult] = useState(() =>
     analyzeGrowthQuery('What is the ROAS?', DEMO_INVESTIGATION_CURRENT_PERIOD)
   );
@@ -18,10 +22,19 @@ export const AIAnalystView: React.FC = () => {
     'What is the total spend and clicks?',
   ];
 
-  const handleExecute = (q: string) => {
+  const handleExecute = async (q: string) => {
     setQuery(q);
-    const res = analyzeGrowthQuery(q, DEMO_INVESTIGATION_CURRENT_PERIOD);
-    setResult(res);
+    setIsRunning(true);
+    try {
+      const res = await provider.runAnalystQuery(q, selectedAccountId);
+      setResult(res);
+    } catch (err) {
+      console.warn('AI Analyst query failed, falling back to local engine:', err);
+      const res = analyzeGrowthQuery(q, DEMO_INVESTIGATION_CURRENT_PERIOD);
+      setResult(res);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   return (
@@ -65,10 +78,11 @@ export const AIAnalystView: React.FC = () => {
           </div>
           <button
             onClick={() => handleExecute(query)}
-            className="flex items-center justify-center space-x-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md text-xs font-semibold shadow-xs transition"
+            disabled={isRunning}
+            className="flex items-center justify-center space-x-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md text-xs font-semibold shadow-xs transition disabled:opacity-50"
           >
             <Send className="w-3.5 h-3.5" />
-            <span>Query Analyst</span>
+            <span>{isRunning ? 'Processing...' : 'Query Analyst'}</span>
           </button>
         </div>
 

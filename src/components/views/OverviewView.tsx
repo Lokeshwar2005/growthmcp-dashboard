@@ -14,8 +14,10 @@ import {
 import { Calendar, Info } from 'lucide-react';
 import { KPICard } from '../common/KPICard';
 import { DemoBadge } from '../common/DemoBadge';
-import { DEMO_CAMPAIGNS, DEMO_DAILY_PERFORMANCE } from '../../data/demoData';
+import { DEMO_DAILY_PERFORMANCE } from '../../data/demoData';
 import { formatCurrency, formatPercent, formatMultiplier, formatNumber } from '../../services/metricsEngine';
+
+import { useAnalytics } from '../../services/analyticsContext';
 
 interface OverviewViewProps {
   dateRange?: string;
@@ -24,25 +26,35 @@ interface OverviewViewProps {
 export const OverviewView: React.FC<OverviewViewProps> = ({
   dateRange = 'Last 14 Days (Sep 07 – Sep 20)',
 }) => {
-  // Aggregate KPIs from deterministic campaign dataset
-  const totalSpend = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.spend, 0);
-  const totalRevenue = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.revenue, 0);
-  const totalImpressions = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.impressions, 0);
-  const totalClicks = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.clicks, 0);
-  const totalLeads = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.leads, 0);
-  const totalConversions = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.conversions, 0);
+  const { mode, campaigns, metrics, selectedAccountId, setMode } = useAnalytics();
 
-  const aggregateRoas = totalRevenue / totalSpend;
-  const aggregateCtr = (totalClicks / totalImpressions) * 100;
-  const aggregateCpl = totalSpend / totalLeads;
-  const aggregateCvr = (totalConversions / totalClicks) * 100;
+  // Aggregate KPIs from active dataset
+  const totalSpend = metrics.spend;
+  const totalRevenue = metrics.revenue;
+  const totalLeads = metrics.leads;
+  const totalConversions = metrics.conversions;
+
+  const aggregateRoas = metrics.roas;
+  const aggregateCtr = metrics.ctr;
+  const aggregateCpl = metrics.cpl;
+  const aggregateCvr = metrics.conversion_rate;
 
   // Platform Breakdown
-  const platformSummary = [
-    { platform: 'Meta Ads', spend: 15470.50, revenue: 27911.88, roas: 1.80, share: 63.8 },
-    { platform: 'Google Ads', spend: 6050.00, revenue: 18540.00, roas: 3.06, share: 25.0 },
-    { platform: 'TikTok Ads', spend: 1950.00, revenue: 2145.00, roas: 1.10, share: 11.2 },
-  ];
+  const platformSummary = React.useMemo(() => {
+    if (mode === 'demo') {
+      return [
+        { platform: 'Meta Ads', spend: 15470.50, revenue: 27911.88, roas: 1.80, share: 63.8 },
+        { platform: 'Google Ads', spend: 6050.00, revenue: 18540.00, roas: 3.06, share: 25.0 },
+        { platform: 'TikTok Ads', spend: 1950.00, revenue: 2145.00, roas: 1.10, share: 11.2 },
+      ];
+    }
+    const metaSpend = campaigns.reduce((acc, c) => acc + c.spend, 0);
+    const metaRev = campaigns.reduce((acc, c) => acc + c.revenue, 0);
+    const metaRoas = metaSpend > 0 ? metaRev / metaSpend : 0;
+    return [
+      { platform: 'Meta Ads', spend: metaSpend, revenue: metaRev, roas: metaRoas, share: 100 },
+    ];
+  }, [mode, campaigns]);
 
   // Derive explicit date context for UI clarity
   const getDateContext = (rangeStr: string) => {
@@ -96,7 +108,34 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
         </div>
       </div>
 
-      <DemoBadge />
+      {mode === 'demo' ? (
+        <DemoBadge />
+      ) : (
+        <div className="flex items-center space-x-2 px-3 py-1.5 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Live GrowthMCP Meta Ads Stream ({selectedAccountId})</span>
+        </div>
+      )}
+
+      {mode === 'live' && campaigns.length === 0 && (
+        <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-start space-x-2">
+            <Info className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+            <div>
+              <p className="font-semibold">Empty Meta Ad Account ({selectedAccountId})</p>
+              <p className="mt-0.5 text-amber-700">
+                GrowthMCP successfully connected to Meta Graph API, but found no active campaigns with performance data in this account for the selected period.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setMode('demo')}
+            className="px-3 py-1 bg-white border border-amber-300 rounded text-amber-800 font-semibold hover:bg-amber-100 transition shrink-0 cursor-pointer"
+          >
+            Switch to Demo Mode
+          </button>
+        </div>
+      )}
 
       {/* Date Window & Trajectory Context Bar */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2.5 px-4 py-3 bg-white border border-slate-200 rounded-lg text-xs shadow-2xs">
