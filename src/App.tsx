@@ -15,7 +15,7 @@ import { SystemView } from './components/views/SystemView';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<NavigationTab>('overview');
-  const [dateRange, setDateRange] = useState('Last 7 Days (Sep 14 – Sep 20)');
+  const [dateRange, setDateRange] = useState('Last 14 Days (Sep 07 – Sep 20)');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [investigationQuestion, setInvestigationQuestion] = useState<string | undefined>(undefined);
 
@@ -73,7 +73,7 @@ export const App: React.FC = () => {
         {/* Scrollable View Area */}
         <main className="flex-1 overflow-y-auto p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
-            {activeTab === 'overview' && <OverviewView />}
+            {activeTab === 'overview' && <OverviewView dateRange={dateRange} />}
             {activeTab === 'campaigns' && (
               <CampaignsView onInvestigateCampaign={handleInvestigateCampaign} />
             )}

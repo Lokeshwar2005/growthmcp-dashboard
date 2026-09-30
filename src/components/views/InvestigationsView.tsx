@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { SearchCheck, ArrowDownRight, ArrowUpRight, ShieldAlert } from 'lucide-react';
 import { investigateGrowthIssue } from '../../services/investigationEngine';
 import { DEMO_INVESTIGATION_CURRENT_PERIOD, DEMO_INVESTIGATION_PREVIOUS_PERIOD } from '../../data/demoData';
@@ -18,18 +18,19 @@ export const InvestigationsView: React.FC<InvestigationsViewProps> = ({ initialQ
     )
   );
 
-  useEffect(() => {
-    if (initialQuestion) {
-      setQuestion(initialQuestion);
-      setResult(
-        investigateGrowthIssue(
-          initialQuestion,
-          DEMO_INVESTIGATION_CURRENT_PERIOD,
-          DEMO_INVESTIGATION_PREVIOUS_PERIOD
-        )
-      );
-    }
-  }, [initialQuestion]);
+  const [prevInitial, setPrevInitial] = useState(initialQuestion);
+
+  if (initialQuestion && initialQuestion !== prevInitial) {
+    setPrevInitial(initialQuestion);
+    setQuestion(initialQuestion);
+    setResult(
+      investigateGrowthIssue(
+        initialQuestion,
+        DEMO_INVESTIGATION_CURRENT_PERIOD,
+        DEMO_INVESTIGATION_PREVIOUS_PERIOD
+      )
+    );
+  }
 
   const presetQuestions = [
     'Why did ROAS drop?',

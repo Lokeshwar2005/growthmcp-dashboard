@@ -11,13 +11,20 @@ import {
   Legend,
   Area,
 } from 'recharts';
+import { Calendar, Info } from 'lucide-react';
 import { KPICard } from '../common/KPICard';
 import { DemoBadge } from '../common/DemoBadge';
 import { DEMO_CAMPAIGNS, DEMO_DAILY_PERFORMANCE } from '../../data/demoData';
 import { formatCurrency, formatPercent, formatMultiplier, formatNumber } from '../../services/metricsEngine';
 
-export const OverviewView: React.FC = () => {
-  // Aggregate KPIs
+interface OverviewViewProps {
+  dateRange?: string;
+}
+
+export const OverviewView: React.FC<OverviewViewProps> = ({
+  dateRange = 'Last 14 Days (Sep 07 – Sep 20)',
+}) => {
+  // Aggregate KPIs from deterministic campaign dataset
   const totalSpend = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.spend, 0);
   const totalRevenue = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.revenue, 0);
   const totalImpressions = DEMO_CAMPAIGNS.reduce((acc, c) => acc + c.impressions, 0);
@@ -37,17 +44,80 @@ export const OverviewView: React.FC = () => {
     { platform: 'TikTok Ads', spend: 1950.00, revenue: 2145.00, roas: 1.10, share: 11.2 },
   ];
 
+  // Derive explicit date context for UI clarity
+  const getDateContext = (rangeStr: string) => {
+    if (rangeStr.includes('14 Days') || rangeStr.includes('Sep 07')) {
+      return {
+        selectedWindow: 'Sep 07 – Sep 20 (14 Days)',
+        currentTrend: 'Sep 14 – Sep 20 (Active 7 Days)',
+        comparisonBaseline: 'Sep 07 – Sep 13 (Prior 7 Days)',
+        chartLabel: '7-Day Trajectory · Sep 14–20',
+        chartSublabel: 'Preceding baseline · Sep 07–13',
+      };
+    }
+    if (rangeStr.includes('30 Days')) {
+      return {
+        selectedWindow: 'Aug 22 – Sep 20 (30 Days)',
+        currentTrend: 'Sep 14 – Sep 20 (Latest 7 Days)',
+        comparisonBaseline: 'Sep 07 – Sep 13 (Prior 7 Days)',
+        chartLabel: '7-Day Trajectory · Sep 14–20',
+        chartSublabel: 'Preceding baseline · Sep 07–13',
+      };
+    }
+    if (rangeStr.includes('Month-to-Date')) {
+      return {
+        selectedWindow: 'Sep 01 – Sep 20 (Month-to-Date)',
+        currentTrend: 'Sep 14 – Sep 20 (Latest 7 Days)',
+        comparisonBaseline: 'Sep 07 – Sep 13 (Prior 7 Days)',
+        chartLabel: '7-Day Trajectory · Sep 14–20',
+        chartSublabel: 'Preceding baseline · Sep 07–13',
+      };
+    }
+    return {
+      selectedWindow: 'Sep 14 – Sep 20 (7 Days)',
+      currentTrend: 'Sep 14 – Sep 20 (Active 7 Days)',
+      comparisonBaseline: 'Sep 07 – Sep 13 (Prior 7 Days)',
+      chartLabel: '7-Day Trajectory · Sep 14–20',
+      chartSublabel: 'Preceding baseline · Sep 07–13',
+    };
+  };
+
+  const dateCtx = getDateContext(dateRange);
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold tracking-tight text-slate-900">Growth Overview</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Monitor acquisition efficiency, revenue contribution, and growth drivers across paid channels.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900">Growth Overview</h1>
+          <p className="text-sm text-slate-500 mt-0.5">
+            Monitor acquisition efficiency, revenue contribution, and growth drivers across paid channels.
+          </p>
+        </div>
       </div>
 
       <DemoBadge />
+
+      {/* Date Window & Trajectory Context Bar */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2.5 px-4 py-3 bg-white border border-slate-200 rounded-lg text-xs shadow-2xs">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <div className="flex items-center space-x-1.5 text-slate-700">
+            <Calendar className="w-3.5 h-3.5 text-indigo-600" />
+            <span className="font-semibold text-slate-900">Reporting Window:</span>
+            <span className="font-mono text-indigo-700 font-semibold">{dateCtx.selectedWindow}</span>
+          </div>
+          <span className="text-slate-300 hidden md:inline">|</span>
+          <div className="flex items-center space-x-1 text-slate-500">
+            <span>Daily Trajectory:</span>
+            <span className="font-mono text-slate-700 font-medium">{dateCtx.currentTrend}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-1.5 text-slate-500 border-t md:border-t-0 pt-1.5 md:pt-0 border-slate-100">
+          <span>Baseline Comparison:</span>
+          <span className="font-mono text-slate-800 font-semibold">{dateCtx.comparisonBaseline}</span>
+        </div>
+      </div>
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -57,13 +127,15 @@ export const OverviewView: React.FC = () => {
           changePct={+12.4}
           comparisonLabel="vs prior 7 days ($21.5k)"
           subtitle="Budget pacing: 98%"
+          definition="Total advertising spend deployed across Meta Ads, Google Ads, and TikTok Ads."
         />
         <KPICard
           title="Gross Ad Revenue"
           value={formatCurrency(totalRevenue)}
           changePct={-8.2}
           comparisonLabel="vs prior 7 days ($43.7k)"
-          subtitle="Blended 1.66x"
+          subtitle="Blended 2.07x"
+          definition="Attributed gross revenue calculated from conversion action values (purchases and catalog orders)."
         />
         <KPICard
           title="Blended ROAS"
@@ -71,20 +143,23 @@ export const OverviewView: React.FC = () => {
           changePct={-18.3}
           comparisonLabel="vs prior 7 days (2.03x)"
           subtitle="Target: 2.20x"
+          definition="Return on Ad Spend: Attributed gross revenue ÷ total ad spend."
         />
         <KPICard
           title="Qualified Leads"
           value={formatNumber(totalLeads)}
           changePct={+6.8}
           comparisonLabel="vs prior 7 days (2,715)"
-          subtitle="Top: Meta DPA"
+          subtitle="Account-level records"
+          definition="CRM & ad account lifecycle-normalized leads across all active and evergreen campaigns (3,288 total). Funnel below tracks first-touch attributed paid leads (2,900)."
         />
         <KPICard
           title="Conversions"
           value={formatNumber(totalConversions)}
           changePct={-4.5}
           comparisonLabel="vs prior 7 days (1,050)"
-          subtitle="Purchases"
+          subtitle="All campaign goals"
+          definition="Total macro-conversions across all campaign objectives (1,093 total). Funnel below tracks verified e-commerce purchase checkouts (1,003)."
         />
         <KPICard
           title="Blended CPL"
@@ -92,7 +167,8 @@ export const OverviewView: React.FC = () => {
           changePct={+5.2}
           comparisonLabel="vs prior 7 days ($7.94)"
           inverted
-          subtitle="Lead efficiency"
+          subtitle="Cost per lead"
+          definition="Cost Per Lead: Total ad spend ÷ qualified leads."
         />
         <KPICard
           title="Click-Through Rate (CTR)"
@@ -100,13 +176,15 @@ export const OverviewView: React.FC = () => {
           changePct={-3.1}
           comparisonLabel="vs prior 7 days (1.99%)"
           subtitle="Aggregate link CTR"
+          definition="Click-Through Rate: Ad clicks ÷ ad impressions × 100."
         />
         <KPICard
           title="Conversion Rate (CVR)"
           value={formatPercent(aggregateCvr)}
           changePct={-7.6}
           comparisonLabel="vs prior 7 days (5.10%)"
-          subtitle="Purchase / click"
+          subtitle="Purchases / click"
+          definition="Conversion Rate: Total conversions ÷ ad clicks × 100."
         />
       </div>
 
@@ -114,12 +192,15 @@ export const OverviewView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Spend vs Revenue Area Chart */}
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-lg p-5 shadow-xs">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-4">
             <div>
               <h2 className="text-sm font-semibold text-slate-900">Spend vs. Revenue Pace</h2>
               <p className="text-xs text-slate-500">Daily investment against attributed gross revenue</p>
             </div>
-            <div className="text-xs font-mono text-slate-500">7-Day Trajectory</div>
+            <div className="text-left sm:text-right">
+              <div className="text-xs font-mono font-semibold text-slate-700">{dateCtx.chartLabel}</div>
+              <div className="text-[10px] text-slate-400">{dateCtx.chartSublabel}</div>
+            </div>
           </div>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -151,9 +232,15 @@ export const OverviewView: React.FC = () => {
               <h2 className="text-sm font-semibold text-slate-900">ROAS Compression</h2>
               <p className="text-xs text-slate-500">Daily return on ad spend metric</p>
             </div>
-            <span className="text-[11px] px-2 py-0.5 rounded bg-rose-50 text-rose-700 font-semibold border border-rose-200">
-              -45.5%
-            </span>
+            <div className="flex items-center space-x-2">
+              <div className="text-right hidden sm:block">
+                <div className="text-[11px] font-mono text-slate-600 font-medium">Sep 14–20</div>
+                <div className="text-[10px] text-slate-400">vs Sep 07–13</div>
+              </div>
+              <span className="text-[11px] px-2 py-0.5 rounded bg-rose-50 text-rose-700 font-semibold border border-rose-200">
+                -45.5%
+              </span>
+            </div>
           </div>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -184,7 +271,10 @@ export const OverviewView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Platform Share Table */}
         <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-xs">
-          <h2 className="text-sm font-semibold text-slate-900 mb-3">Platform Efficiency Breakdown</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-slate-900">Platform Efficiency Breakdown</h2>
+            <span className="text-[11px] font-mono text-slate-400">Channel Share</span>
+          </div>
           <div className="space-y-4">
             {platformSummary.map((p) => (
               <div key={p.platform} className="p-3 bg-slate-50 rounded-md border border-slate-200">
@@ -209,41 +299,57 @@ export const OverviewView: React.FC = () => {
         </div>
 
         {/* Acquisition Funnel Card */}
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-lg p-5 shadow-xs">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-sm font-semibold text-slate-900">Acquisition Conversion Funnel</h2>
-              <p className="text-xs text-slate-500">Cross-channel aggregate stage progression</p>
+        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-lg p-5 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h2 className="text-sm font-semibold text-slate-900">Acquisition Conversion Funnel</h2>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    Attributed Paid Funnel
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Multi-touch paid advertising progression from impression to store purchase
+                </p>
+              </div>
+              <span className="text-xs font-mono text-slate-500">Blended Stage Rates</span>
             </div>
-            <span className="text-xs font-mono text-slate-500">Blended Rates</span>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+              <div className="p-3 bg-indigo-50/60 rounded-md border border-indigo-100">
+                <span className="text-[11px] font-semibold text-indigo-700 uppercase">1. Impressions</span>
+                <div className="text-lg font-bold text-slate-900 font-mono mt-1">1.29M</div>
+                <span className="text-[10px] text-slate-500">Top-of-Funnel Reach</span>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-md border border-slate-200">
+                <span className="text-[11px] font-semibold text-slate-600 uppercase">2. Ad Clicks</span>
+                <div className="text-lg font-bold text-slate-900 font-mono mt-1">21.3k</div>
+                <span className="text-[10px] text-emerald-700 font-semibold">1.93% Click Rate</span>
+              </div>
+              <div className="p-3 bg-slate-50 rounded-md border border-slate-200">
+                <span className="text-[11px] font-semibold text-slate-600 uppercase">3. Attributed Leads</span>
+                <div className="text-lg font-bold text-slate-900 font-mono mt-1">2,900</div>
+                <span className="text-[10px] text-indigo-700 font-semibold">13.6% Click-to-Lead</span>
+              </div>
+              <div className="p-3 bg-emerald-50/60 rounded-md border border-emerald-100">
+                <span className="text-[11px] font-semibold text-emerald-700 uppercase">4. Store Purchases</span>
+                <div className="text-lg font-bold text-slate-900 font-mono mt-1">1,003</div>
+                <span className="text-[10px] text-emerald-800 font-semibold">4.71% Purchase CVR</span>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-3 text-center">
-            <div className="p-3 bg-indigo-50/60 rounded-md border border-indigo-100">
-              <span className="text-[11px] font-semibold text-indigo-700 uppercase">Impressions</span>
-              <div className="text-lg font-bold text-slate-900 font-mono mt-1">1.29M</div>
-              <span className="text-[10px] text-slate-500">100% Top of Funnel</span>
+          {/* Explanatory Distinction Banner */}
+          <div className="mt-5 pt-3.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-slate-500">
+            <div className="flex items-start space-x-1.5 text-slate-600">
+              <Info className="w-4 h-4 text-indigo-600 flex-shrink-0 mt-0.5" />
+              <span>
+                <strong className="text-slate-800">Methodology Distinction:</strong> Funnel tracks multi-touch paid acquisition events (2,900 Leads → 1,003 Purchases). Top KPI cards report lifecycle-normalized account totals (3,288 Qualified Leads → 1,093 Total Conversions across all campaigns).
+              </span>
             </div>
-            <div className="p-3 bg-slate-50 rounded-md border border-slate-200">
-              <span className="text-[11px] font-semibold text-slate-600 uppercase">Clicks</span>
-              <div className="text-lg font-bold text-slate-900 font-mono mt-1">21.3k</div>
-              <span className="text-[10px] text-emerald-700 font-semibold">1.93% CTR</span>
-            </div>
-            <div className="p-3 bg-slate-50 rounded-md border border-slate-200">
-              <span className="text-[11px] font-semibold text-slate-600 uppercase">Leads</span>
-              <div className="text-lg font-bold text-slate-900 font-mono mt-1">2,900</div>
-              <span className="text-[10px] text-indigo-700 font-semibold">13.6% Click-to-Lead</span>
-            </div>
-            <div className="p-3 bg-emerald-50/60 rounded-md border border-emerald-100">
-              <span className="text-[11px] font-semibold text-emerald-700 uppercase">Purchases</span>
-              <div className="text-lg font-bold text-slate-900 font-mono mt-1">1,003</div>
-              <span className="text-[10px] text-emerald-800 font-semibold">4.71% CVR</span>
-            </div>
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <div>
-              <span className="font-semibold text-slate-700">FastMCP Insight:</span> Conversion drop-off is concentrated in TopFunnel Reels where CTR declined from 2.1% to 1.6%.
+            <div className="text-[11px] font-mono text-slate-400 whitespace-nowrap pl-5 sm:pl-0">
+              Attribution: 7d Click / 1d View
             </div>
           </div>
         </div>
